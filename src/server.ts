@@ -26,14 +26,52 @@ import insightsRoutes from "./routes/insights";
 
 const app = express();
 const httpServer = http.createServer(app);
-const io = new IOServer(httpServer, { cors: { origin: "*" } });
+
+/* ======================================================
+   🔥 CORS CONFIG (ESSENCIAL PRO VERCEL)
+====================================================== */
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://sentinel-frontend-sigma.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+
+// Preflight explícito (resolve erro do login)
+app.options("*", cors());
+
+app.use(express.json());
+
+/* ======================================================
+   🔥 SOCKET.IO
+====================================================== */
+const io = new IOServer(httpServer, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("🔌 Socket conectado:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("❌ Socket desconectado:", socket.id);
+  });
+});
 
 export { io };
 
-app.use(cors());
-app.use(express.json());
-
-// ROTAS
+/* ======================================================
+   🔥 ROTAS
+====================================================== */
 app.use("/auth", authRoutes);
 app.use("/setores", setorRoutes);
 app.use("/usuarios", usuarioRoutes);
@@ -49,19 +87,20 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/forecast", forecastRoutes);
 app.use("/insights", insightsRoutes);
 
-// 🔥 Porta correta SEM undefined
+/* ======================================================
+   🔥 START SERVER (APÓS MONGO)
+====================================================== */
 const PORT = process.env.PORT || 4000;
 
-// --------------
-// CONECTAR MONGO ANTES DO SERVIDOR
-// --------------
 mongoose
   .connect(process.env.MONGO_URI!)
   .then(() => {
-    console.log("🔥 MongoDB conectado!");
+    console.log("🔥 MongoDB conectado com sucesso!");
 
     httpServer.listen(PORT, () => {
-      console.log(`🚀 API online com WebSocket em http://localhost:${PORT}`);
+      console.log(`🚀 API online na porta ${PORT}`);
     });
   })
-  .catch((err) => console.log("Erro no Mongo:", err));
+  .catch((err) => {
+    console.error("❌ Erro ao conectar no MongoDB:", err);
+  });
