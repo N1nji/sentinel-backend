@@ -28,7 +28,7 @@ const app = express();
 const httpServer = http.createServer(app);
 
 /* ======================================================
-   🔥 CORS CONFIG (ESSENCIAL PRO VERCEL)
+   🔥 CORS CONFIG (FUNCIONA NO NODE 22)
 ====================================================== */
 const allowedOrigins = [
   "http://localhost:5173",
@@ -40,12 +40,8 @@ app.use(
     origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
   })
 );
-
-// Preflight explícito (resolve erro do login)
-app.options("*", cors());
 
 app.use(express.json());
 
@@ -88,19 +84,19 @@ app.use("/forecast", forecastRoutes);
 app.use("/insights", insightsRoutes);
 
 /* ======================================================
-   🔥 START SERVER (APÓS MONGO)
+   🔥 START SERVER
 ====================================================== */
 const PORT = process.env.PORT || 4000;
 
 mongoose
   .connect(process.env.MONGO_URI!)
   .then(() => {
-    console.log("🔥 MongoDB conectado com sucesso!");
+    console.log("🔥 MongoDB conectado!");
 
     httpServer.listen(PORT, () => {
       console.log(`🚀 API online na porta ${PORT}`);
     });
   })
   .catch((err) => {
-    console.error("❌ Erro ao conectar no MongoDB:", err);
+    console.error("❌ Erro no Mongo:", err);
   });
