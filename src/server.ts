@@ -32,7 +32,7 @@ const httpServer = http.createServer(app);
 ====================================================== */
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://sentinel-frontend-sigma.vercel.app",
+  "https://sentinel-sigma.vercel.app",
 ];
 
 app.use(
