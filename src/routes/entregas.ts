@@ -5,6 +5,7 @@ import Entrega from "../models/EntregaEpi";
 import Epi from "../models/Epi";
 import { auth, AuthRequest } from "../middleware/auth";
 import { notifyLowStock } from "../utils/notifyLowStock";
+import { onlyAdmin } from "../middleware/admin";
 
 const router = Router();
 
@@ -102,29 +103,28 @@ router.post("/", auth, async (req: AuthRequest, res) => {
   }
 });
 
-/* ==========================
-   DELETAR ENTREGA + RESTAURAR ESTOQUE
-========================== */
-router.delete("/:id", auth, async (req, res) => {
+/* ============================================================
+   DELETAR ENTREGA (RESTRITO: ADMIN/GESTOR) + TRAVA SEGURANÇA
+============================================================ */
+
+router.delete("/:id", auth, onlyAdmin, async (req, res) => {
   try {
     const entrega = await Entrega.findById(req.params.id);
     if (!entrega) return res.status(404).json({ error: "Entrega não encontrada" });
-    if (entrega.devolvida) {
-      return res.status(400).json({ error: "Entrega já devolvida não pode ser excluída" });
-  }
 
-
-    const epi = await Epi.findById(entrega.epiId);
-    if (epi) {
-      epi.estoque += entrega.quantidade;
-      await epi.save();
+    // Se o item NÃO foi devolvido, precisamos devolver pro estoque antes de apagar o registro
+    if (!entrega.devolvida) {
+      const epi = await Epi.findById(entrega.epiId);
+      if (epi) {
+        epi.estoque += entrega.quantidade;
+        await epi.save();
+      }
     }
 
     await entrega.deleteOne();
-    res.json({ msg: "Entrega removida e estoque restaurado" });
-
+    res.json({ msg: "Registro excluído com sucesso e estoque ajustado." });
   } catch (err) {
-    res.status(500).json({ error: "Erro ao deletar entrega" });
+    res.status(500).json({ error: "Erro ao deletar registro." });
   }
 });
 

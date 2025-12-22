@@ -3,8 +3,13 @@ import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 // Extende o tipo do Express Request para aceitar user e userId
+// backend/src/middleware/auth.ts
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: {
+    id: string;
+    tipo: string; // Adicionamos o tipo aqui
+    email: string;
+  };
   userId?: string;
 }
 
@@ -17,12 +22,12 @@ export function auth(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
 
-    req.user = decoded;
+    // O objeto 'decoded' deve conter o que você enviou no login (id, tipo, etc)
+    req.user = decoded; 
     req.userId = decoded.id || decoded._id;
 
     next();
   } catch (err) {
-    console.error("Erro no token:", err);
     return res.status(401).json({ erro: "Token inválido" });
   }
 }

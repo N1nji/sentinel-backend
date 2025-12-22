@@ -5,15 +5,23 @@ import jwt from "jsonwebtoken";
 
 const router = Router();
 
-// REGISTER (temporário para criar primeiro user)
+// REGISTER
 router.post("/register", async (req, res) => {
-  const { nome, email, senha } = req.body;
+  const { nome, email, senha, tipo } = req.body;
+
+  const existe = await Usuario.findOne({ email });
+  if (existe) return res.status(400).json({ erro: "E-mail já cadastrado" });
 
   const hash = await bcrypt.hash(senha, 10);
 
-  const usuario = await Usuario.create({ nome, email, senha: hash });
+  await Usuario.create({ 
+    nome, 
+    email, 
+    senha: hash,
+    tipo: tipo || "user" 
+  });
 
-  res.json(usuario);
+  res.json({ msg: "Usuário criado com sucesso" });
 });
 
 // LOGIN
@@ -27,12 +35,15 @@ router.post("/login", async (req, res) => {
   if (!ok) return res.status(400).json({ erro: "Senha incorreta" });
 
   const token = jwt.sign(
-    { id: usuario._id, tipo: usuario.tipo },
+    { id: usuario._id, tipo: usuario.tipo }, // Aqui já está perfeito!
     process.env.JWT_SECRET!,
     { expiresIn: "1d" }
   );
 
-  res.json({ token, usuario });
+  // Remove a senha antes de enviar para o frontend
+  const { senha: _, ...usuarioSemSenha } = usuario.toObject();
+
+  res.json({ token, usuario: usuarioSemSenha });
 });
 
 export default router;
