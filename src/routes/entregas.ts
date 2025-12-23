@@ -85,15 +85,6 @@ router.post("/", auth, async (req: AuthRequest, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    // Notificação via Socket.io
-    const io = req.app.get("io"); // Pega a instância do socket
-    if (io) {
-      io.emit("nova_entrega", { 
-        msg: "Nova entrega realizada!", 
-        epi: epi.nome 
-      });
-    }
-
     // Webhook se estoque baixo
     if (epi.estoque <= 5) notifyLowStock(epi);
 
@@ -101,6 +92,20 @@ router.post("/", auth, async (req: AuthRequest, res) => {
     const entregaFull = await Entrega.findById(entrega[0]._id)
       .populate("colaboradorId", "nome matricula")
       .populate("entreguePor", "nome email");
+
+    // Notificação via Socket.io
+    const io = req.app.get("io"); // Pega a instância do socket
+    if (io) {
+      
+      const nomeColaborador = (entregaFull?.colaboradorId as any)?.nome || 'Colaborador';
+
+      io.emit("nova_entrega", { 
+        msg: `EPI entregue para ${nomeColaborador}`,
+        epi: epi.nome,
+      });
+    }
+
+    if (epi.estoque <= 5) notifyLowStock(epi);
 
     res.json(entregaFull);
 
@@ -131,6 +136,11 @@ router.delete("/:id", auth, onlyAdmin, async (req, res) => {
     }
 
     await entrega.deleteOne();
+
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("nova_entrega", { msg: "Um registro de entrega foi removido" });
+    }
     res.json({ msg: "Registro excluído com sucesso e estoque ajustado." });
   } catch (err) {
     res.status(500).json({ error: "Erro ao deletar registro." });
@@ -264,17 +274,21 @@ router.post("/:id/devolucao", auth, async (req: AuthRequest, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    // Notificação via Socket.io
-    const io = req.app.get("io");
-    if (io) {
-      io.emit("nova_entrega", { msg: "Item devolvido ao estoque" });
-    }
-
     // Retorna entrega populada
     const entregaFull = await Entrega.findById(entrega._id)
       .populate("colaboradorId", "nome matricula")
       .populate("entreguePor", "nome email")
       .populate("devolvidoPor", "nome email");
+
+    // Agora emite o socket com o nome do colaborador
+      const io = req.app.get("io");
+      if (io) {
+        const nomeCol = (entregaFull?.colaboradorId as any)?.nome || 'Colaborador';
+        io.emit("nova_entrega", { 
+          msg: `EPI devolvido por: ${nomeCol}`,
+          tipo: "info" 
+        });
+      }
 
     res.json(entregaFull);
 
