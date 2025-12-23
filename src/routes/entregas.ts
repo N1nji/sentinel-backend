@@ -85,6 +85,15 @@ router.post("/", auth, async (req: AuthRequest, res) => {
     await session.commitTransaction();
     session.endSession();
 
+    // Notificação via Socket.io
+    const io = req.app.get("io"); // Pega a instância do socket
+    if (io) {
+      io.emit("nova_entrega", { 
+        msg: "Nova entrega realizada!", 
+        epi: epi.nome 
+      });
+    }
+
     // Webhook se estoque baixo
     if (epi.estoque <= 5) notifyLowStock(epi);
 
@@ -254,6 +263,12 @@ router.post("/:id/devolucao", auth, async (req: AuthRequest, res) => {
 
     await session.commitTransaction();
     session.endSession();
+
+    // Notificação via Socket.io
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("nova_entrega", { msg: "Item devolvido ao estoque" });
+    }
 
     // Retorna entrega populada
     const entregaFull = await Entrega.findById(entrega._id)

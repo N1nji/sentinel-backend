@@ -55,6 +55,8 @@ const io = new IOServer(httpServer, {
   },
 });
 
+app.set("io", io); // Torna o io acessível nas rotas
+
 io.on("connection", (socket) => {
   console.log("🔌 Socket conectado:", socket.id);
 
