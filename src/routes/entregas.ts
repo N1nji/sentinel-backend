@@ -7,6 +7,7 @@ import { auth, AuthRequest } from "../middleware/auth";
 import { notifyLowStock } from "../utils/notifyLowStock";
 import { onlyAdmin } from "../middleware/admin";
 import Notification from "../models/Notifications";
+import { registrarLog } from "../utils/logger";
 
 const router = Router();
 
@@ -96,6 +97,11 @@ router.post("/", auth, async (req: AuthRequest, res) => {
 
     try {
       const nomeColaborador = (entregaFull?.colaboradorId as any)?.nome || 'Colaborador';
+      await registrarLog(
+      userId!, 
+      "Entrega de EPI", 
+      `Entregue ${quantidade}x ${epi.nome} para ${nomeColaborador}`
+    );
       
       // 1. SALVA NO BANCO (Para o Sininho/Header ter histórico)
       const notificacaoDb = await Notification.create({
@@ -138,7 +144,7 @@ router.post("/", auth, async (req: AuthRequest, res) => {
    DELETAR ENTREGA (RESTRITO: ADMIN/GESTOR) + TRAVA SEGURANÇA
 ============================================================ */
 
-router.delete("/:id", auth, onlyAdmin, async (req, res) => {
+router.delete("/:id", auth, onlyAdmin, async (req: AuthRequest, res) => {
   try {
     const entrega = await Entrega.findById(req.params.id);
     if (!entrega) return res.status(404).json({ error: "Entrega não encontrada" });
@@ -152,7 +158,14 @@ router.delete("/:id", auth, onlyAdmin, async (req, res) => {
       }
     }
 
+    const idParaLog = entrega._id;
     await entrega.deleteOne();
+
+    await registrarLog(
+    req.userId!, 
+    "Exclusão de Registro", 
+    `Removeu o registro de entrega ID: ${idParaLog}`
+  );
 
     const io = req.app.get("io");
     if (io) {
@@ -299,6 +312,11 @@ router.post("/:id/devolucao", auth, async (req: AuthRequest, res) => {
 
     try {
           const nomeCol = (entregaFull?.colaboradorId as any)?.nome || 'Colaborador';
+          await registrarLog(
+          userId!, 
+          "Entrega de EPI", 
+          `EPI ${entregaFull?.epiSnapshot?.nome} devolvido por ${nomeCol}`
+        );
           
           const novaNotiDevolucao = await Notification.create({
             usuario_id: userId,
