@@ -6,6 +6,7 @@ import Epi from "../models/Epi";
 import { auth, AuthRequest } from "../middleware/auth";
 import { notifyLowStock } from "../utils/notifyLowStock";
 import { onlyAdmin } from "../middleware/admin";
+import Notification from "../models/Notifications";
 
 const router = Router();
 
@@ -93,16 +94,32 @@ router.post("/", auth, async (req: AuthRequest, res) => {
       .populate("colaboradorId", "nome matricula")
       .populate("entreguePor", "nome email");
 
-    // Notificação via Socket.io
-    const io = req.app.get("io"); // Pega a instância do socket
-    if (io) {
-      
+    try {
       const nomeColaborador = (entregaFull?.colaboradorId as any)?.nome || 'Colaborador';
-
-      io.emit("nova_entrega", { 
-        msg: `EPI entregue para ${nomeColaborador}`,
-        epi: epi.nome,
+      
+      // 1. SALVA NO BANCO (Para o Sininho/Header ter histórico)
+      const notificacaoDb = await Notification.create({
+        usuario_id: userId,
+        titulo: "Nova Entrega",
+        mensagem: `${epi.nome} entregue para ${nomeColaborador}`,
+        tipo: "entrega",
+        lida: false
       });
+
+      const io = req.app.get("io");
+      if (io) {
+        // MANTÉM O NOME ANTIGO (Para não quebrar o Dashboard/Telas de Entrega)
+        io.emit("nova_entrega", { 
+          msg: `EPI entregue para ${nomeColaborador}`,
+          epi: epi.nome,
+          notificacao: notificacaoDb // Enviamos o objeto do banco junto!
+        });
+
+        // OPCIONAL: Se o  Header estiver configurado para um canal geral
+        // io.emit("nova_notificacao", notificacaoDb); 
+      }
+    } catch (error) {
+      console.error("Erro na notificação:", error);
     }
 
     if (epi.estoque <= 5) notifyLowStock(epi);
@@ -280,15 +297,29 @@ router.post("/:id/devolucao", auth, async (req: AuthRequest, res) => {
       .populate("entreguePor", "nome email")
       .populate("devolvidoPor", "nome email");
 
-    // Agora emite o socket com o nome do colaborador
-      const io = req.app.get("io");
-      if (io) {
-        const nomeCol = (entregaFull?.colaboradorId as any)?.nome || 'Colaborador';
-        io.emit("nova_entrega", { 
-          msg: `EPI devolvido por: ${nomeCol}`,
-          tipo: "info" 
-        });
-      }
+    try {
+          const nomeCol = (entregaFull?.colaboradorId as any)?.nome || 'Colaborador';
+          
+          const novaNotiDevolucao = await Notification.create({
+            usuario_id: userId,
+            titulo: "EPI Devolvido",
+            mensagem: `O colaborador ${nomeCol} devolveu um EPI.`,
+            tipo: "entrega", // ou "info" se você tiver esse tipo
+            lida: false
+          });
+
+          const io = req.app.get("io");
+          if (io) {
+            io.emit("nova_entrega", {
+              msg: `EPI devolvido por: ${nomeCol}`,
+              notificacao: novaNotiDevolucao
+          });
+        }
+
+        } catch (notiError) {
+          console.error("Erro ao gerar notificação de devolução:", notiError);
+        }
+    // ==========================================
 
     res.json(entregaFull);
 

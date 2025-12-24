@@ -23,6 +23,7 @@ import reportsRoutes from "./routes/reports";
 import dashboardRoutes from "./routes/dashboard";
 import forecastRoutes from "./routes/forecast";
 import insightsRoutes from "./routes/insights";
+import notificationsRoutes from "./routes/notifications";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -84,6 +85,7 @@ app.use("/reports", reportsRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/forecast", forecastRoutes);
 app.use("/insights", insightsRoutes);
+app.use("/notifications", notificationsRoutes);
 
 /* ======================================================
    🔥 START SERVER
