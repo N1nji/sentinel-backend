@@ -39,7 +39,7 @@ router.get("/epis-status", auth, async (req: AuthRequest, res) => {
     const hoje = new Date();
     const epis = await Epi.find().lean();
     const vencidos = epis.filter((e:any) => e.validade_ca && new Date(e.validade_ca) < hoje);
-    const semEstoque = epis.filter((e:any) => e.estoque <= 0);
+    const semEstoque = epis.filter((e:any) => e.estoque <= 5);
     res.json({
       total: epis.length,
       vencidos: vencidos.map((e:any) => ({ id: e._id, nome: e.nome, validade: e.validade_ca })),

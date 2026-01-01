@@ -36,7 +36,7 @@ router.get("/me", auth, async (req: AuthRequest, res) => {
 
 // REGISTER
 router.post("/register", async (req, res) => {
-  // Adicionei 'cargo' aqui para bater com a nova Model
+ 
   const { nome, email, senha, tipo, cargo } = req.body;
 
   const existe = await Usuario.findOne({ email });

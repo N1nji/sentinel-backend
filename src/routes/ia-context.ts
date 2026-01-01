@@ -13,121 +13,102 @@ const ia = new Groq({
 });
 
 // ======================================================
-// IA COM CONTEXTO CORPORATIVO (FORTE + AFIRMATIVO)
+// IA COM CONTEXTO CORPORATIVO + MEMÓRIA + DATA
 // ======================================================
 router.post("/context", auth, async (req: AuthRequest, res) => {
   try {
-    const { mensagem } = req.body;
+    // Adicionamos 'historico' vindo do corpo da requisição
+    const { mensagem, historico = [] } = req.body;
 
     if (!mensagem) {
       return res.status(400).json({ error: "Mensagem não enviada." });
     }
 
-    // 🔹 Buscar dados COM POPULATE
+    // 🔹 Buscar dados com limites para performance
     const [epis, setores, riscos, colaboradores] = await Promise.all([
-      Epi.find().limit(100).lean(),
-      Setor.find().limit(100).lean(),
-      Risco.find().limit(100).lean(),
+      Epi.find().limit(50).lean(),
+      Setor.find().limit(50).lean(),
+      Risco.find().limit(30).lean(),
       Colaborador.find()
         .populate("setorId", "nome")
-        .limit(200)
+        .limit(100)
         .lean(),
     ]);
 
     // ==================================================
-    // RESUMOS HUMANOS (SEM IDs SOLTOS)
+    // FORMATADORES DE CONTEXTO (LISTAS TÉCNICAS)
     // ==================================================
-    function resumoSetores(list: any[]) {
-      return list
-        .map((s) => `Setor ${s.nome}`)
-        .slice(0, 50)
-        .join("\n");
-    }
+    const resumoSetores = setores.map((s) => `- SETOR: ${s.nome}`).join("\n");
 
-    function resumoColaboradores(list: any[]) {
-      return list
-        .map((c) => {
-          const setorNome =
-            typeof c.setorId === "object" && c.setorId?.nome
-              ? c.setorId.nome
-              : "Setor não informado";
+    const resumoColaboradores = colaboradores.map((c) => {
+      const setorNome = (c.setorId as any)?.nome || "Setor não informado";
+      return `- COLABORADOR: ${c.nome} | SETOR: ${setorNome} | MATRÍCULA: ${c.matricula || "N/A"}`;
+    }).join("\n");
 
-          return `O colaborador ${c.nome} trabalha no setor ${setorNome}. Matrícula: ${c.matricula || "N/A"}.`;
-        })
-        .slice(0, 50)
-        .join("\n");
-    }
+    const resumoRiscos = riscos.map((r) => `- RISCO: ${r.nome} | CLASSIFICAÇÃO: ${r.classificacao}`).join("\n");
 
-    function resumoRiscos(list: any[]) {
-      return list
-        .map((r) => {
-          return `Risco ${r.nome} classificado como ${r.classificacao}.`;
-        })
-        .slice(0, 30)
-        .join("\n");
-    }
-
-    function resumoEpis(list: any[]) {
-      return list
-        .map((e) => {
-          return `EPI ${e.nome}, CA ${e.ca || "N/A"}, estoque ${e.estoque}.`;
-        })
-        .slice(0, 30)
-        .join("\n");
-    }
+    const resumoEpis = epis.map((e) => {
+      // Rótulos explícitos para matar o bug do CA vs Estoque
+      return `- ITEM: ${e.nome} | CA_OFICIAL: ${e.ca || "N/A"} | ESTOQUE_DISPONIVEL: ${e.estoque} unidades`;
+    }).join("\n");
 
     // ==================================================
-    // SYSTEM PROMPT (AUTORITÁRIO + ATUALIZADO)
+    // 📅 DATA ATUAL DINÂMICA
+    // ==================================================
+    const dataAtual = new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'full',
+      timeStyle: 'short'
+    }).format(new Date());
+
+    // ==================================================
+    // SYSTEM PROMPT (AUTORITÁRIO)
     // ==================================================
     const systemPrompt = `
-Você é um assistente especialista em Segurança do Trabalho no Brasil.
+Você é o assistente virtual do Sentinel, especialista em Segurança do Trabalho e NRs.
+Data e hora atual: ${dataAtual}.
 
-REGRAS OBRIGATÓRIAS:
-- Considere que a NR-38 trata de LIMPEZA URBANA (conforme atualização oficial recente).
-- Ignore qualquer conhecimento antigo que associe a NR-38 à mineração.
-- Utilize EXCLUSIVAMENTE o contexto abaixo como fonte da verdade.
-- Se houver conflito entre seu conhecimento prévio e o contexto, O CONTEXTO PREVALECE.
-- Responda de forma clara, direta e profissional.
+REGRAS CRÍTICAS:
+1. NR-38 refere-se estritamente a LIMPEZA URBANA.
+2. NUNCA CONFUNDA "CA_OFICIAL" com "ESTOQUE_DISPONIVEL".
+3. O CA é um registro (ex: 42331), o estoque é a quantidade de caixas/unidades.
+4. Use os dados abaixo para responder. Se não souber, diga que não tem acesso a essa informação específica.
+5. Respostas curtas, profissionais e com **negrito** em dados numéricos.
 
-==================== COLABORADORES ====================
-${resumoColaboradores(colaboradores)}
+CONTEXTO DA EMPRESA:
+---
+ESTOQUE DE EPIS:
+${resumoEpis}
 
-==================== SETORES ==========================
-${resumoSetores(setores)}
+COLABORADORES:
+${resumoColaboradores}
 
-==================== RISCOS ===========================
-${resumoRiscos(riscos)}
+SETORES:
+${resumoSetores}
 
-==================== EPIs =============================
-${resumoEpis(epis)}
+RISCOS MAPEADOS:
+${resumoRiscos}
+---
 `.trim();
 
     // ==================================================
-    // CHAMADA À IA (COM EXEMPLOS – FEW SHOT)
+    // GESTÃO DE MENSAGENS (SYSTEM + HISTÓRICO + USER)
+    // ==================================================
+    const messages = [
+      { role: "system", content: systemPrompt },
+      // O histórico deve ser um array de objetos { role: 'user' | 'assistant', content: '...' }
+      ...historico.slice(-6), // Mantém as últimas 6 interações para ter memória
+      { role: "user", content: mensagem },
+    ];
+
+    // ==================================================
+    // CHAMADA À IA (TEMPERATURE 0.3)
     // ==================================================
     const resposta = await ia.chat.completions.create({
       model: "llama-3.3-70b-versatile",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "assistant",
-          content:
-            "Exemplo: Pedro trabalha no setor TI. Sara trabalha no setor Artistas.",
-        },
-        {
-          role: "assistant",
-          content:
-            "Exemplo: Segundo a NR-38 (Limpeza Urbana), os EPIs incluem luvas, botas impermeáveis, máscara e colete refletivo.",
-        },
-        {
-          role: "user",
-          content: mensagem,
-        },
-      ],
-      temperature: 0.2,
+      messages: messages as any,
+      temperature: 0.3, // Focado mas com fluidez natural
+      max_tokens: 1000,
+      top_p: 1,
     });
 
     res.json({
@@ -135,7 +116,7 @@ ${resumoEpis(epis)}
     });
   } catch (err) {
     console.error("Erro IA context:", err);
-    res.status(500).json({ error: "Erro ao consultar IA com contexto." });
+    res.status(500).json({ error: "Erro ao processar inteligência do Sentinel." });
   }
 });
 
