@@ -24,7 +24,7 @@ router.post("/context", auth, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: "Mensagem não enviada." });
     }
 
-    // 🔹 Buscar dados com limites para performance
+    // Buscar dados com limites para performance
     const [epis, setores, riscos, colaboradores] = await Promise.all([
       Epi.find().limit(50).lean(),
       Setor.find().limit(50).lean(),
@@ -49,7 +49,7 @@ router.post("/context", auth, async (req: AuthRequest, res) => {
 
     const resumoEpis = epis.map((e) => {
       // Rótulos explícitos para matar o bug do CA vs Estoque
-      return `- ITEM: ${e.nome} | CA_OFICIAL: ${e.ca || "N/A"} | ESTOQUE_DISPONIVEL: ${e.estoque} unidades`;
+      return `- ITEM/EPI: ${e.nome} | CA_OFICIAL: ${e.ca || "N/A"} | ESTOQUE_DISPONIVEL: ${e.estoque} unidades`;
     }).join("\n");
 
     // ==================================================
@@ -70,9 +70,10 @@ Data e hora atual: ${dataAtual}.
 REGRAS CRÍTICAS:
 1. NR-38 refere-se estritamente a LIMPEZA URBANA.
 2. NUNCA CONFUNDA "CA_OFICIAL" com "ESTOQUE_DISPONIVEL".
-3. O CA é um registro (ex: 42331), o estoque é a quantidade de caixas/unidades.
+3. O CA é um registro (ex: 42331).
 4. Use os dados abaixo para responder. Se não souber, diga que não tem acesso a essa informação específica.
 5. Respostas curtas, profissionais e com **negrito** em dados numéricos.
+6. O campo "ESTOQUE_REAL" é a quantidade física no armazém.
 
 CONTEXTO DA EMPRESA:
 ---
