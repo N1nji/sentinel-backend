@@ -55,7 +55,7 @@ router.post("/register", async (req, res) => {
   res.json({ msg: "Usuário criado com sucesso" });
 });
 
-// LOGIN (Mantive igual, está perfeito)
+
 router.post("/login", async (req, res) => {
   const { email, senha } = req.body;
 
