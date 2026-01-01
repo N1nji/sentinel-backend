@@ -193,7 +193,7 @@ ${epis.map(e => `- ITEM/EPI: ${e.nome} | QUANTIDADE_EM_ESTOQUE: ${e.estoque} uni
 
 REGRAS DE OURO:
 1. "QUANTIDADE_EM_ESTOQUE" é o que temos no armazém.
-2. "CA" é apenas o número do registro, NUNCA use o CA como se fosse a quantidade.
+2. "CA" (CERTIFICADO DE APROVAÇÃO) é apenas o número do registro, NUNCA use o CA (CERTIFICADO DE APROVAÇÃO) como se fosse a quantidade.
 3. Se o usuário perguntar "quanto tem", olhe apenas para o campo QUANTIDADE_EM_ESTOQUE.
 
 Riscos:
