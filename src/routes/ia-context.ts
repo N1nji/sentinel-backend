@@ -49,7 +49,7 @@ router.post("/context", auth, async (req: AuthRequest, res) => {
 
     const resumoEpis = epis.map((e) => {
       // Rótulos explícitos para matar o bug do CA vs Estoque
-      return `- ITEM/EPI: ${e.nome} | CA_OFICIAL: ${e.ca || "N/A"} | QUANTIDADE_EM_ESTOQUE: ${e.estoque} unidades`;
+      return `- ITEM/EPI: ${e.nome} | CA: ${e.ca || "N/A"} | QUANTIDADE_EM_ESTOQUE: ${e.estoque} unidades`;
     }).join("\n");
 
     // ==================================================

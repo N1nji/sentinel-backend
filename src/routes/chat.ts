@@ -188,8 +188,13 @@ REGRAS:
 - Nunca invente dados sobre colaboradores, setores ou EPIs que não estejam no contexto
 
 ====================
-EPIs:
-${resumo(epis, 20, ["nome", "ca", "estoque"])}
+EPIs EM ESTOQUE (DADOS REAIS):
+${epis.map(e => `- ITEM/EPI: ${e.nome} | QUANTIDADE_EM_ESTOQUE: ${e.estoque} unidades | CA: ${e.ca || "N/A"}`).join("\n")}
+
+REGRAS DE OURO:
+1. "QUANTIDADE_EM_ESTOQUE" é o que temos no armazém.
+2. "CA" é apenas o número do registro, NUNCA use o CA como se fosse a quantidade.
+3. Se o usuário perguntar "quanto tem", olhe apenas para o campo QUANTIDADE_EM_ESTOQUE.
 
 Riscos:
 ${riscos
