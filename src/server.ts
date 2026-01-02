@@ -10,6 +10,7 @@ dotenv.config();
 
 // 🔥 Rotas
 import authRoutes from "./routes/auth";
+import securityRoutes from "./routes/security";
 import setorRoutes from "./routes/setores";
 import usuarioRoutes from "./routes/usuarios";
 import colaboradorRoutes from "./routes/colaboradores";
@@ -86,6 +87,7 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/forecast", forecastRoutes);
 app.use("/insights", insightsRoutes);
 app.use("/notifications", notificationsRoutes);
+app.use("/security", securityRoutes);
 
 /* ======================================================
    🔥 START SERVER
