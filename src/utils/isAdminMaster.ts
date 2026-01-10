@@ -1,7 +1,7 @@
 import type { AuthRequest } from "../middleware/auth";
 
 export function isAdminMaster(req: AuthRequest): boolean {
-  const MASTER_EMAIL = process.env.ADMIN_MASTER_EMAIL;
+  const MASTER_EMAIL = process.env.MASTER_ADMIN_EMAIL;
 
   if (!MASTER_EMAIL) return false;
 
