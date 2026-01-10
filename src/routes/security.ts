@@ -15,6 +15,15 @@ function adminOnly(req: AuthRequest, res: any, next: any) {
 }
 
 /* =====================================================
+   🕵️‍♂️ FUNÇÃO PARA MASCARAR IP
+===================================================== */
+function maskIp(ip?: string) {
+  if (!ip) return "";
+  // IPv4 → 192.168.0.xxx
+  return ip.replace(/\.\d+$/, ".xxx");
+}
+
+/* =====================================================
    📜 LISTAR LOGS DE SEGURANÇA
    GET /security/logs
 ===================================================== */
@@ -47,12 +56,25 @@ router.get("/logs", auth, adminOnly, async (req: AuthRequest, res) => {
       SecurityLog.countDocuments(filtros),
     ]);
 
+    // VERIFICA SE É ADMIN MASTER
+    const isMasterAdmin =
+      req.user?.email === process.env.MASTER_ADMIN_EMAIL;
+
+    // SANITIZA IP PARA OUTROS ADMINS
+    const logsSanitizados = logs.map((log: any) => {
+      const obj = log.toObject();
+      return {
+        ...obj,
+        ip: isMasterAdmin ? obj.ip : maskIp(obj.ip),
+      };
+    });
+
     res.json({
       page: pageNum,
       limit: limitNum,
       total,
       totalPages: Math.ceil(total / limitNum),
-      logs,
+      logs: logsSanitizados,
     });
   } catch (err) {
     console.error(err);
