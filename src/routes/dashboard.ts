@@ -2,7 +2,6 @@ import { Router } from "express";
 import { auth, AuthRequest } from "../middleware/auth";
 import Entrega from "../models/EntregaEpi";
 import Epi from "../models/Epi";
-import Setor from "../models/Setor";
 import Colaborador from "../models/Colaborador";
 import dayjs from "dayjs";
 

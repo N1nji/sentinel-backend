@@ -54,7 +54,7 @@ const SecurityLogSchema = new mongoose.Schema(
   }
 );
 
-// 🔥 Índices para performance (importante)
+//  Índices para performance (importante)
 SecurityLogSchema.index({ createdAt: -1 });
 SecurityLogSchema.index({ action: 1 });
 SecurityLogSchema.index({ userId: 1 });

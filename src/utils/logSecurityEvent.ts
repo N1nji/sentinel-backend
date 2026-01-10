@@ -38,7 +38,7 @@ export async function logSecurityEvent({
       details,
     });
   } catch (err) {
-    // ❗ NUNCA quebrar a aplicação por causa de log
+    //  NUNCA quebrar a aplicação por causa de log
     console.error("Erro ao registrar SecurityLog:", err);
   }
 }

@@ -39,7 +39,7 @@ router.put("/:id", auth, async (req, res) => {
 
   const usuario = await Usuario.findByIdAndUpdate(
     req.params.id,
-    { nome, email, tipo }, // ⚠️ ISSO PRECISA EXISTIR
+    { nome, email, tipo },
     { new: true }
   );
 

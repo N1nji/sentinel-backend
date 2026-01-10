@@ -39,7 +39,7 @@ export async function auth(req: AuthRequest, res: Response, next: NextFunction) 
       return res.status(401).json({ erro: "Usuário não encontrado" });
     }
 
-    // 3️⃣ Verifica tokenVersion (🔥 logout remoto REAL)
+    // 3️⃣ Verifica tokenVersion ( logout remoto )
     if (decoded.tokenVersion !== usuario.tokenVersion) {
       return res.status(401).json({ erro: "Sessão encerrada" });
     }

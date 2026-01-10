@@ -37,7 +37,7 @@ router.post("/", auth, async (req, res) => {
 
     // Aqui o problema ocorria:
     // TS estava inferindo um array porque havia conflito com outro model.
-    // Agora, com rota limpa, volta a funcionar.
+    // Agora com a rota limpa, volta a funcionar.
 
     const risco = await Risco.create({
       nome,
