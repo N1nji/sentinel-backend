@@ -120,6 +120,7 @@ router.post("/login", async (req, res) => {
         id: usuario._id,
         tipo: usuario.tipo,
         email: usuario.email,
+        tokenVersion: usuario.tokenVersion,
       },
       process.env.JWT_SECRET!,
       { expiresIn: "1d" }
