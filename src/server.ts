@@ -25,6 +25,7 @@ import dashboardRoutes from "./routes/dashboard";
 import forecastRoutes from "./routes/forecast";
 import insightsRoutes from "./routes/insights";
 import notificationsRoutes from "./routes/notifications";
+import sessionRoutes from "./routes/session";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -88,6 +89,7 @@ app.use("/forecast", forecastRoutes);
 app.use("/insights", insightsRoutes);
 app.use("/notifications", notificationsRoutes);
 app.use("/security", securityRoutes);
+app.use("/session", sessionRoutes);
 
 /* ======================================================
    🔥 START SERVER

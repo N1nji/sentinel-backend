@@ -7,7 +7,8 @@ const UsuarioSchema = new mongoose.Schema({
   tipo: { type: String, enum: ["admin", "comum"], default: "admin" }, // Restringi os tipos
   cargo: { type: String, default: "Técnico de Segurança" }, // Novo campo
   status: { type: String, default: "ativo" }, // Para controle de acesso
-  dataCriacao: { type: Date, default: Date.now }
+  dataCriacao: { type: Date, default: Date.now },
+  tokenVersion: { type: Number, default: 0 }, // Para invalidação de tokens
 });
 
 export default mongoose.model("Usuario", UsuarioSchema);

@@ -2,8 +2,8 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import Usuario from "../models/Usuario";
+import Log from "../models/Log";
 
-// Extende o tipo do Express Request para aceitar user e userId
 export interface AuthRequest extends Request {
   user?: {
     id: string;
@@ -22,7 +22,7 @@ export async function auth(req: AuthRequest, res: Response, next: NextFunction) 
   const token = header.replace("Bearer ", "");
 
   try {
-    // 1️⃣ Verifica o token
+    // 1️⃣ Verifica JWT
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
 
     const userId = decoded.id || decoded._id;
@@ -30,21 +30,35 @@ export async function auth(req: AuthRequest, res: Response, next: NextFunction) 
       return res.status(401).json({ erro: "Token inválido" });
     }
 
-    // 2️⃣ Busca usuário no banco
-    const usuario = await Usuario.findById(userId).select("status tipo email");
+    // 2️⃣ Busca usuário + tokenVersion
+    const usuario = await Usuario.findById(userId).select(
+      "status tipo email tokenVersion"
+    );
 
     if (!usuario) {
       return res.status(401).json({ erro: "Usuário não encontrado" });
     }
 
-    // 3️⃣ Verifica status (🔥 AQUI ESTÁ A MÁGICA)
+    // 3️⃣ Verifica tokenVersion (🔥 logout remoto REAL)
+    if (decoded.tokenVersion !== usuario.tokenVersion) {
+      return res.status(401).json({ erro: "Sessão encerrada" });
+    }
+
+    // 4️⃣ Verifica status
     if (usuario.status !== "ativo") {
+      await Log.create({
+        usuarioId: usuario._id,
+        acao: "ACCESS_DENIED",
+        detalhes: "Tentativa de acesso com conta inativa",
+        ip: req.ip,
+      });
+
       return res.status(403).json({
         erro: "Acesso bloqueado. Entre em contato com o administrador.",
       });
     }
 
-    // 4️⃣ Injeta dados no request (mantém compatibilidade)
+    // 5️⃣ Injeta dados no request
     req.user = {
       id: usuario._id.toString(),
       tipo: usuario.tipo,
@@ -53,7 +67,7 @@ export async function auth(req: AuthRequest, res: Response, next: NextFunction) 
     req.userId = usuario._id.toString();
 
     next();
-  } catch (err) {
+  } catch {
     return res.status(401).json({ erro: "Token inválido" });
   }
 }
