@@ -8,7 +8,7 @@ const router = Router();
 
 // LISTAR TODOS
 router.get("/", auth, onlyAdmin, async (req: AuthRequest, res) => {
-  const usuarios = await Usuario.find().select("-senha").lean; // remove
+  const usuarios = await Usuario.find().select("-senha").lean(); // remove
 
   const isAdminMaster = 
     req.user?.email === process.env.MASTER_ADMIN_EMAIL;
