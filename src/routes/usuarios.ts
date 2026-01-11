@@ -1,15 +1,22 @@
 import { Router } from "express";
 import Usuario from "../models/Usuario";
 import bcrypt from "bcryptjs";
-import { auth } from "../middleware/auth";
+import { auth, AuthRequest } from "../middleware/auth";
 import { onlyAdmin } from "../middleware/admin";
 
 const router = Router();
 
 // LISTAR TODOS
-router.get("/", auth, onlyAdmin, async (_, res) => {
-  const usuarios = await Usuario.find().select("-senha"); // remove senha
-  res.json(usuarios);
+router.get("/", auth, onlyAdmin, async (req: AuthRequest, res) => {
+  const usuarios = await Usuario.find().select("-senha").lean; // remove
+
+  const isAdminMaster = 
+    req.user?.email === process.env.MASTER_ADMIN_EMAIL;
+
+  res.json({
+    usuarios,
+    isAdminMaster,
+  });
 });
 
 // CRIAR USUÁRIO
