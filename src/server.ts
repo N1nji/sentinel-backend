@@ -8,7 +8,7 @@ import { Server as IOServer } from "socket.io";
 
 dotenv.config();
 
-// 🔥 Rotas
+// Rotas
 import authRoutes from "./routes/auth";
 import securityRoutes from "./routes/security";
 import setorRoutes from "./routes/setores";
@@ -31,7 +31,7 @@ const app = express();
 const httpServer = http.createServer(app);
 
 /* ======================================================
-   🔥 CORS CONFIG (FUNCIONA NO NODE 22)
+   CORS CONFIG (FUNCIONA NO NODE 22)
 ====================================================== */
 const allowedOrigins = [
   "http://localhost:5173",
@@ -49,7 +49,7 @@ app.use(
 app.use(express.json());
 
 /* ======================================================
-   🔥 SOCKET.IO
+   SOCKET.IO
 ====================================================== */
 const io = new IOServer(httpServer, {
   cors: {
@@ -71,7 +71,7 @@ io.on("connection", (socket) => {
 export { io };
 
 /* ======================================================
-   🔥 ROTAS
+   ROTAS
 ====================================================== */
 app.use("/auth", authRoutes);
 app.use("/setores", setorRoutes);
@@ -92,7 +92,7 @@ app.use("/security", securityRoutes);
 app.use("/sessions", sessionRoutes);
 
 /* ======================================================
-   🔥 START SERVER
+   START SERVER
 ====================================================== */
 const PORT = process.env.PORT || 4000;
 

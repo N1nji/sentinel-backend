@@ -233,14 +233,14 @@ ${colabs
       temperature: 0.3,
     });
 
-    // ✅ MANTENDO PADRÃO ANTIGO (SEM NULL)
+    // MANTENDO PADRÃO ANTIGO
     const resposta =
       respostaIA.choices?.[0]?.message?.content || "Sem resposta.";
 
     // Salva resposta
     chat.mensagens.push({ role: "assistant", content: resposta });
 
-    // ✅ AUTO-RENAME (IGUAL AO ANTIGO, SÓ MAIS SEGURO)
+    // AUTO-RENAME (IGUAL AO ANTIGO, SÓ MAIS SEGURO)
     if (!chat.tituloEditado && chat.titulo === "Novo chat") {
       const primeiraLinha = resposta.split("\n")[0] || "";
       const palavras = primeiraLinha.split(/\s+/).slice(0, 4);

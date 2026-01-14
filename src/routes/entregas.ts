@@ -114,14 +114,13 @@ router.post("/", auth, async (req: AuthRequest, res) => {
 
       const io = req.app.get("io");
       if (io) {
-        // MANTÉM O NOME ANTIGO (Para não quebrar o Dashboard/Telas de Entrega)
         io.emit("nova_entrega", { 
           msg: `EPI entregue para ${nomeColaborador}`,
           epi: epi.nome,
           notificacao: notificacaoDb // Enviamos o objeto do banco junto!
         });
 
-        // OPCIONAL: Se o  Header estiver configurado para um canal geral
+        // OPCIONAL
         // io.emit("nova_notificacao", notificacaoDb); 
       }
     } catch (error) {
@@ -322,7 +321,7 @@ router.post("/:id/devolucao", auth, async (req: AuthRequest, res) => {
             usuario_id: userId,
             titulo: "EPI Devolvido",
             mensagem: `O colaborador ${nomeCol} devolveu um EPI.`,
-            tipo: "entrega", // ou "info" se você tiver esse tipo
+            tipo: "entrega",
             lida: false
           });
 

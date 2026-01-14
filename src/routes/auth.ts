@@ -1,6 +1,6 @@
 import { Router } from "express";
 import Usuario from "../models/Usuario";
-import Log from "../models/Log"; // 🔒 LOG DE AÇÕES DO SISTEMA (NÃO REMOVER)
+import Log from "../models/Log";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { auth, AuthRequest } from "../middleware/auth";
@@ -19,7 +19,7 @@ router.get("/me", auth, async (req: AuthRequest, res) => {
       return res.status(404).json({ erro: "Usuário não encontrado" });
     }
 
-    // Logs funcionais (ações do sistema) — mantém como estava
+    // Logs funcionais (ações do sistema)
     const logsRecentes = await Log.find({ usuarioId: req.userId })
       .sort({ data: -1 })
       .limit(10);

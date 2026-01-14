@@ -24,7 +24,7 @@ router.put("/notifications/:id/read", auth, async (req: AuthRequest, res: Respon
   try {
     const { id } = req.params;
     
-    // Além do ID, garantimos que a notificação pertence ao usuário logado (Segurança!)
+    // Além do ID, garantir que a notificação pertence ao usuário logado (Segurança!)
     await Notification.findOneAndUpdate(
       { _id: id, usuario_id: req.userId }, 
       { lida: true }

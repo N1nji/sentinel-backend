@@ -37,7 +37,7 @@ router.post("/", auth, onlyAdmin, async (req, res) => {
   res.json({
     msg: "Usuário criado com sucesso!",
     usuario: { id: novo._id, nome, email, tipo },
-    senhaGerada // Mostramos SOMENTE nesta resposta
+    senhaGerada // Mostrar SOMENTE nesta resposta
   });
 });
 
