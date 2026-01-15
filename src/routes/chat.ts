@@ -101,7 +101,7 @@ router.put("/:id/rename", auth, async (req: AuthRequest, res) => {
 });
 
 // ======================================================
-// EXPORTAR CHAT EM PDF
+// EXPORTAR CHAT EM PDF (VERSÃO PREMIUM SENTINEL)
 // ======================================================
 router.get("/:id/export", auth, async (req: AuthRequest, res: Response) => {
   try {
@@ -112,31 +112,115 @@ router.get("/:id/export", auth, async (req: AuthRequest, res: Response) => {
 
     if (!chat) return res.status(404).json({ error: "Chat não encontrado" });
 
-    const doc = new PDFDocument({ margin: 40 });
+    // Inicia o documento A4 com margens profissionais
+    const doc = new PDFDocument({ 
+      size: "A4", 
+      margin: 50,
+      bufferPages: true 
+    });
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="chat-${chat._id}.pdf"`
+      `attachment; filename="Relatorio_Sentinel_${chat._id}.pdf"`
     );
 
     doc.pipe(res);
 
-    doc.fontSize(18).text(chat.titulo, { align: "center" });
-    doc.moveDown();
+    // --- CABEÇALHO (BRANDING) ---
+    doc
+      .fillColor("#6366f1") // Indigo Sentinel
+      .fontSize(20)
+      .font("Helvetica-Bold")
+      .text("SENTINEL IA", { continued: true })
+      .fillColor("#94a3b8")
+      .fontSize(10)
+      .font("Helvetica")
+      .text("  |  SISTEMA DE GESTÃO SST", { align: "right" });
 
+    doc.moveDown(0.5);
+    
+    // Linha horizontal decorativa
+    doc
+      .strokeColor("#e2e8f0")
+      .lineWidth(1)
+      .moveTo(50, doc.y)
+      .lineTo(545, doc.y)
+      .stroke();
+    
+    doc.moveDown(1.5);
+
+    // --- TÍTULO E METADADOS ---
+    doc
+      .fillColor("#1e293b")
+      .fontSize(16)
+      .font("Helvetica-Bold")
+      .text(chat.titulo.toUpperCase());
+
+    doc
+      .fontSize(9)
+      .fillColor("#64748b")
+      .font("Helvetica")
+      .text(`Protocolo: ${chat._id}  •  Emitido em: ${new Date().toLocaleString("pt-BR")}`);
+
+    doc.moveDown(2);
+
+    // --- MENSAGENS ---
     chat.mensagens.forEach((m: any) => {
-      doc
-        .fontSize(10)
-        .fillColor(m.role === "user" ? "blue" : "black")
-        .text(
-          `${m.role.toUpperCase()} - ${new Date(m.timestamp).toLocaleString()}`
-        );
+      const isUser = m.role === "user";
+      
+      // Salva a posição inicial para desenhar a linha lateral depois
+      const startY = doc.y;
 
-      doc.moveDown(0.2);
-      doc.fontSize(12).fillColor("black").text(m.content);
-      doc.moveDown();
+      // Nome do Remetente
+      doc
+        .fillColor(isUser ? "#64748b" : "#6366f1")
+        .font("Helvetica-Bold")
+        .fontSize(9)
+        .text(isUser ? "SOLICITAÇÃO DO USUÁRIO" : "RESPOSTA TÉCNICA SENTINEL IA", 65);
+
+      doc.moveDown(0.4);
+
+      // Conteúdo da Mensagem
+      doc
+        .fillColor("#334155")
+        .font("Helvetica")
+        .fontSize(10)
+        .text(m.content, 70, doc.y, {
+          width: 470,
+          align: "justify",
+          lineGap: 2
+        });
+
+      // Linha lateral (Visual de "Quote" profissional)
+      const endY = doc.y;
+      doc
+        .strokeColor(isUser ? "#cbd5e1" : "#6366f1")
+        .lineWidth(2)
+        .moveTo(55, startY + 2)
+        .lineTo(55, endY)
+        .stroke();
+
+      doc.moveDown(1.5); // Espaço entre as mensagens
+
+      // Evita que uma mensagem comece no finalzinho da página
+      if (doc.y > 700) doc.addPage();
     });
+
+    // --- RODAPÉ (PAGINAÇÃO) ---
+    const range = doc.bufferedPageRange();
+    for (let i = range.start; i < (range.start + range.count); i++) {
+      doc.switchToPage(i);
+      doc
+        .fontSize(8)
+        .fillColor("#94a3b8")
+        .text(
+          `Página ${i + 1} de ${range.count}  •  Documento gerado pelo ecossistema Sentinel IA`,
+          50,
+          780,
+          { align: "center", width: 500 }
+        );
+    }
 
     doc.end();
   } catch (err) {
