@@ -200,6 +200,15 @@ REGRAS CRÍTICAS
 - Se não houver informação, diga claramente
 
 =================================================
+REGRA ABSOLUTA DE FORMATAÇÃO
+=================================================
+- A resposta DEVE começar obrigatoriamente pela linha "INTENCAO:"
+- NÃO escreva títulos, introduções ou explicações fora do formato
+- NÃO repita informações fora do bloco estruturado
+- NÃO utilize acentos na palavra "INTENCAO"
+- Se o formato não for seguido, a resposta é considerada inválida
+
+=================================================
 FORMATO DE RESPOSTA (OBRIGATÓRIO)
 =================================================
 INTENCAO:
