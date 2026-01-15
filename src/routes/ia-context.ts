@@ -161,6 +161,8 @@ REGRA ABSOLUTA DE FORMATAÇÃO
 - NÃO repita informações fora do bloco estruturado
 - NÃO utilize acentos na palavra "INTENCAO"
 - Se o formato não for seguido, a resposta é considerada inválida
+- Cada seção (INTENCAO, RESUMO, DADOS, ALERTA) deve estar em uma nova linha
+- Nunca colocar mais de uma seção na mesma linha
 
 =================================================
 FORMATO DE RESPOSTA (OBRIGATÓRIO)
