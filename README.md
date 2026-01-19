@@ -163,52 +163,47 @@ O Sentinel IA foi projetado com foco em **segurança corporativa**.
 
 🔗 **URL:** *https://sentinelv2.vercel.app*
 
-### Conta de Demonstração
+### 🔐 Conta de Demonstração
+
 ```txt
 Email: demo@sentinel.app
 Senha: demo123
 
-> A conta demo ainda está sendo implementada e vai ter permissões limitadas e não irá permitir alterações críticas no sistema.
-
+```
+> ⚠️ A conta demo ainda está sendo implementada e terá permissões limitadas, não permitindo alterações críticas no sistema.
 _____________________________________________________________________________________________
 
-🎥 Demonstração em Vídeo
+### 🎥 Demonstração em Vídeo
 
 📹 Vídeo de apresentação do sistema:
 👉 (vídeo em breve!)
 
-O vídeo demonstra:
-
-Login e segurança
-
-Gestão de EPIs
-
-Validade de CA
-
-Chat com IA
-
-Histórico de entregas
-
-Exportação em PDF
+O vídeo demonstra:  
+Login e segurança  
+Gestão de EPIs  
+Validade de CA  
+Chat com IA  
+Histórico de entregas  
+Exportação em PDF  
 _____________________________________________________________________________________________
-👤 Autor
+## 👤 Autor
 
-Felipe (N1nji)
-Desenvolvedor Full Stack | IA | Web | Jogos
-Co-Fundador da N1S1 Games
+Felipe (N1nji)  
+Desenvolvedor Full Stack | IA | Web | Jogos  
+Co-Fundador da N1S1 Games  
 
-🔗 GitHub: https://github.com/N1nji
-🔗 LinkedIn: https://www.linkedin.com/in/pedrofelipe-n1
+🔗 GitHub: https://github.com/N1nji  
+🔗 LinkedIn: https://www.linkedin.com/in/pedrofelipe-n1  
 _____________________________________________________________________________________________
 
-🚀 Status do Projeto
+## 🚀 Status do Projeto
 
-✅ Funcional
-✅ Em desenvolvimento contínuo
-✅ Pronto para demonstração
+✅ Funcional  
+✅ Em desenvolvimento contínuo  
+✅ Pronto para demonstração   
 _____________________________________________________________________________________________
 
-📌 Observação Final
+## 📌 Observação Final
 
 Este projeto foi desenvolvido com foco em qualidade de código,
 regras de negócio reais e experiência profissional, simulando
