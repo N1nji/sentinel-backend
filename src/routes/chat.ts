@@ -5,6 +5,7 @@ import Epi from "../models/Epi";
 import Setor from "../models/Setor";
 import Risco from "../models/Risco";
 import Colaborador from "../models/Colaborador";
+import EntregaEpi from "../models/EntregaEpi";
 import { auth, AuthRequest } from "../middleware/auth";
 import PDFDocument from "pdfkit";
 
@@ -249,11 +250,17 @@ router.post("/:id/mensagem", auth, async (req: AuthRequest, res) => {
     chat.mensagens.push({ role: "user", content });
 
     // BUSCAR CONTEXTO REAL COM POPULATE
-    const [epis, riscos, setores, colabs] = await Promise.all([
+    const [epis, riscos, setores, colabs, entregas] = await Promise.all([
       Epi.find().limit(100).lean(),
       Risco.find().populate("setorId", "nome").limit(100).lean(),
       Setor.find().limit(100).lean(),
       Colaborador.find().populate("setorId", "nome").limit(200).lean(),
+      EntregaEpi.find()
+      .populate("colaboradorId", "nome matricula")
+      .populate("epiId", "nome")
+      .sort({ dataEntrega: -1 })
+      .limit(20)
+      .lean(),
     ]);
 
     // ==================================================
@@ -263,6 +270,24 @@ router.post("/:id/mensagem", auth, async (req: AuthRequest, res) => {
       dateStyle: "full",
       timeStyle: "short",
     }).format(new Date());
+
+    const resumoEntregas = entregas
+  .map((e: any) => {
+    return `- ENTREGA:
+  COLABORADOR: ${e.colaboradorId?.nome || "N/A"} (${e.colaboradorId?.matricula || "N/A"})
+  EPI: ${e.epiSnapshot?.nome || e.epiId?.nome}
+  CA: ${e.epiSnapshot?.ca}
+  VALIDADE_CA: ${
+    e.epiSnapshot?.validade_ca
+      ? new Date(e.epiSnapshot.validade_ca).toLocaleDateString("pt-BR")
+      : "N/A"
+  }
+  STATUS_CA: ${e.validadeStatus?.toUpperCase() || "N/A"}
+  DATA_ENTREGA: ${new Date(e.dataEntrega).toLocaleDateString("pt-BR")}
+  DEVOLVIDA: ${e.devolvida ? "SIM" : "NÃO"}`;
+  })
+  .join("\n");
+    
 
     //  SYSTEM PROMPT (NR-1, NR-6, NR-9, NR-38)
 const systemPrompt = `
@@ -332,6 +357,9 @@ ${epis.map(e =>
     ESTOQUE: ${e.estoque}
     STATUS: ${e.status.toUpperCase()}`
 ).join("\n")}
+
+ENTREGAS DE EPIs (BASE LEGAL):
+${resumoEntregas}
 
 RISCOS:
 ${riscos.map(
