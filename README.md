@@ -161,7 +161,7 @@ O Sentinel IA foi projetado com foco em **segurança corporativa**.
 
 ## 🔐 Acesso ao Sistema (Demo)
 
-🔗 **URL:** *https://sentinelv2.vercel.app*
+🔗 **URL:** *https://sentinelv2.vercel.app/login*
 
 ### 🔐 Conta de Demonstração
 
