@@ -370,7 +370,7 @@ ${riscos.map(
 SETORES:
 ${setores.map(s => `
   - SETOR: ${s.nome}
-    RESPOSÁVEL: ${s.responsavel || "Não informado"}
+    RESPONSÁVEL: ${s.responsavel || "Não informado"}
     STATUS: ${s.status.toUpperCase()}
     DESCRIÇÃO: ${s.descricao || "N/A"}
 `).join("\n")}
