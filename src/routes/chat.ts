@@ -368,7 +368,12 @@ ${riscos.map(
 ).join("\n")}
 
 SETORES:
-${resumo(setores, 50, ["nome"])}
+${setores.map(s => `
+  - SETOR: ${s.nome}
+    RESPOSÁVEL: ${s.responsavel || "Não informado"}
+    STATUS: ${s.status.toUpperCase()}
+    DESCRIÇÃO: ${s.descricao || "N/A"}
+`).join("\n")}
 
 COLABORADORES:
 ${colabs.map(
